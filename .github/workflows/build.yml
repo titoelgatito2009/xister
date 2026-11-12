@@ -9,7 +9,7 @@ permissions:
 jobs:
   build:
     runs-on: macos-latest
-    steps:
+  steps:
       - uses: actions/checkout@v4
 
       - name: Compilar
