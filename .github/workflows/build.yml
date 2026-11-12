@@ -17,9 +17,9 @@ jobs:
           brew install ldid
           git clone --depth 1 https://github.com/Tyilo/insert_dylib
           cd insert_dylib
-          xcodebuild -project insert_dylib.xcodeproj -configuration Release -derivedDataPath dd >/dev/null
-          cp dd/Build/Products/Release/insert_dylib /usr/local/bin/
+          clang -fobjc-arc -framework Foundation -o /usr/local/bin/insert_dylib $(find . -name '*.m')
           chmod +x /usr/local/bin/insert_dylib
+          /usr/local/bin/insert_dylib --help >/dev/null && echo "insert_dylib OK"
 
       - name: Compilar
         run: bash build.sh
