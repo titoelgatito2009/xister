@@ -23,7 +23,9 @@ jobs:
           brew install ldid
           git clone --depth 1 https://github.com/Tyilo/insert_dylib
           cd insert_dylib
-          clang -fobjc-arc -framework Foundation -o /usr/local/bin/insert_dylib $(find . -name '*.c' -o -name '*.m')
+          SRC=$(find . -name '*.c' -not -path '*tests*')
+          echo "fuentes: $SRC"
+          clang -O2 -framework Foundation -o /usr/local/bin/insert_dylib $SRC
           chmod +x /usr/local/bin/insert_dylib
           test -x /usr/local/bin/insert_dylib && echo OK
 
