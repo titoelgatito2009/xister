@@ -1,28 +1,35 @@
 name: build
+
 on:
   push:
   workflow_dispatch:
+    inputs:
+      debug:
+        description: "Generar tambien IPA con Frida"
+        type: boolean
+        default: true
 
 permissions:
   contents: read
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
+      - name: Herramientas
+        run: |
+          brew install ldid
+          git clone --depth 1 https://github.com/Tyilo/insert_dylib
+          cd insert_dylib
+          clang -fobjc-arc -framework Foundation -o /usr/local/bin/insert_dylib $(find . -name '*.m')
+          chmod +x /usr/local/bin/insert_dylib
+          /usr/local/bin/insert_dylib --help >/dev/null && echo "insert_dylib OK"
+
       - name: Compilar
         run: bash build.sh
-        
-      - name: Instalar Herramientas
-       run: |
-        brew install ldid
-        git clone --depth 1 https://github.com/Tyilo/insert_dylib
-        cd insert_dylib
-        clang -O2 insert_dylib.c -o /usr/local/bin/insert_dylib
-        chmod +x /usr/local/bin/insert_dylib
-        
+
       - name: Descargar IPA
         run: |
           mkdir -p out
@@ -38,6 +45,21 @@ jobs:
           ldid -Sentitlements.plist "$BIN"
           ( cd w && zip -qry ../out/Xister-injected.ipa Payload )
           cp build/Xister.dylib out/Xister.dylib
+
+      - name: Frida gadget
+        if: ${{ github.event.inputs.debug == 'true' }}
+        run: |
+          TAG=$(curl -s https://api.github.com/repos/frida/frida/releases/latest | grep -o '"tag_name": *"[^"]*' | cut -d'"' -f4)
+          curl -fL -o g.xz "https://github.com/frida/frida/releases/download/$TAG/frida-gadget-$TAG-ios-arm64.dylib.xz"
+          xz -d g.xz
+          mv g FridaGadget.dylib
+          cp -r w w2
+          BIN2=$(find w2/Payload -maxdepth 2 -type f -perm -111 ! -name '*.dylib' | head -1)
+          cp FridaGadget.dylib "$(dirname "$BIN2")/"
+          printf '{"interaction":{"type":"listen","address":"0.0.0.0","port":27042},"runtime":"qjs"}' > "$(dirname "$BIN2")/FridaGadget.config"
+          insert_dylib --strip-codesig --inplace @executable_path/FridaGadget.dylib "$BIN2"
+          ldid -Sentitlements.plist "$BIN2"
+          ( cd w2 && zip -qry ../out/Xister-debug.ipa Payload )
 
       - uses: actions/upload-artifact@v4
         with:
