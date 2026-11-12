@@ -14,7 +14,15 @@ jobs:
 
       - name: Compilar
         run: bash build.sh
-          
+        
+      - name: Instalar Herramientas
+       run: |
+        brew install ldid
+        git clone --depth 1 https://github.com/Tyilo/insert_dylib
+        cd insert_dylib
+        clang -O2 insert_dylib.c -o /usr/local/bin/insert_dylib
+        chmod +x /usr/local/bin/insert_dylib
+        
       - name: Descargar IPA
         run: |
           mkdir -p out
