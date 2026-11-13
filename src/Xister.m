@@ -3,7 +3,6 @@
 #import <UIKit/UIKit.h>
 #import <QuartzCore/QuartzCore.h>
 #import <mach/mach.h>
-#import <mach/mach_vm.h>
 #import <mach/mach_time.h>
 #import <mach/vm_region.h>
 #import <mach/vm_map.h>
@@ -83,30 +82,30 @@ static inline mach_port_t xs_task(void){ return mach_task_self(); }
 static bool xs_readable(uintptr_t addr, size_t len){
     if (!addr || addr < 0x100000000ULL || addr > 0x00007FFFFFFFFFFFULL) return false;
     if (!len || len > (64u << 20)) return false;
-    mach_vm_address_t a = (mach_vm_address_t)addr;
-    mach_vm_size_t sz = 0;
+    vm_address_t a = (vm_address_t)addr;
+    vm_size_t sz = 0;
     vm_region_basic_info_data_64_t info;
     mach_msg_type_number_t cnt = VM_REGION_BASIC_INFO_COUNT_64;
     mach_port_t obj = MACH_PORT_NULL;
-    kern_return_t kr = mach_vm_region(xs_task(), &a, &sz, VM_REGION_BASIC_INFO_64,
-                                      (vm_region_info_t)&info, &cnt, &obj);
-    if (obj != MACH_PORT_NULL) mach_port_deallocate(xs_task(), obj);
+    kern_return_t kr = vm_region_64(mach_task_self(), &a, &sz, VM_REGION_BASIC_INFO_64,
+                                    (vm_region_info_t)&info, &cnt, &obj);
+    if (obj != MACH_PORT_NULL) mach_port_deallocate(mach_task_self(), obj);
     if (kr != KERN_SUCCESS) return false;
     if (!(info.protection & VM_PROT_READ)) return false;
-    return a <= (mach_vm_address_t)addr && (mach_vm_address_t)(addr + len) <= a + sz;
+    return a <= (vm_address_t)addr && (vm_address_t)(addr + len) <= a + sz;
 }
 
 static bool xs_read(void *dst, uintptr_t src, size_t len){
     if (!xs_readable(src, len)) return false;
-    mach_vm_size_t out = 0;
-    return mach_vm_read_overwrite(xs_task(), (mach_vm_address_t)src, len,
-                                  (mach_vm_address_t)dst, &out) == KERN_SUCCESS && out == len;
+    vm_size_t out = 0;
+    return vm_read_overwrite(mach_task_self(), (vm_address_t)src, len,
+                             (vm_address_t)dst, &out) == KERN_SUCCESS && out == len;
 }
 
 static bool xs_write(uintptr_t dst, const void *src, size_t len){
     if (!xs_readable(dst, len)) return false;
-    return mach_vm_write(xs_task(), (mach_vm_address_t)dst, (vm_offset_t)src,
-                         (mach_msg_type_number_t)len) == KERN_SUCCESS;
+    return vm_write(mach_task_self(), (vm_address_t)dst, (vm_offset_t)src,
+                    (mach_msg_type_number_t)len) == KERN_SUCCESS;
 }
 
 #define XSRD(T, addr, fb) ({ T _v = (fb); xs_read(&_v, (uintptr_t)(addr), sizeof(T)) ? _v : (fb); })
@@ -389,8 +388,8 @@ static bool      gPulsed = false;
 static float     gRemX, gRemY;
 
 static float xs_score(const XSEnt *e, Vec2 cur, float *ang){
-    Vec3 pt = (gP.boneIdxNeck()) ? e->neck : e->head;
     Vec3 pt = gP.aimNeck ? e->neck : e->head;
+    Vec3 d = v3sub(pt, gLocalEye);
     float yaw = atan2f(d.x, d.z) * 57.29578f;
     float pitch = atan2f(d.y, sqrtf(d.x*d.x + d.z*d.z)) * 57.29578f;
     float a = sqrtf(powf(wrapdeg(yaw - cur.x), 2) + powf(wrapdeg(pitch - cur.y), 2));
