@@ -733,6 +733,7 @@ static void xs_loop(void){
 @end
 
 @interface XSPanel : UIView
+@property (nonatomic, strong) UIView *bubble;
 @end
 
 @implementation XSPanel {
@@ -740,7 +741,6 @@ static void xs_loop(void){
     UISegmentedControl *_tabs;
     NSMutableArray<XSToggle *> *_aimT, *_visT;
     NSMutableArray<UISlider *> *_aimS, *_visS;
-    UIView *_bubble;
     UIWindow *_win;
 }
 - (void)refresh{
@@ -967,7 +967,7 @@ static void xs_ui_present(void){
         gPanel = [[XSPanel alloc] initWithWindow:gPanelWin];
         gPanel.translatesAutoresizingMaskIntoConstraints = NO;
         [root addSubview:gPanel];
-        [root addSubview:gPanel->_bubble];
+        [root addSubview:gPanel.bubble];
 
         [NSLayoutConstraint activateConstraints:@[
             [gPanel.topAnchor constraintEqualToAnchor:root.topAnchor],
@@ -975,7 +975,7 @@ static void xs_ui_present(void){
             [gPanel.leadingAnchor constraintEqualToAnchor:root.leadingAnchor],
             [gPanel.trailingAnchor constraintEqualToAnchor:root.trailingAnchor],
         ]];
-        gPanel->_bubble.center = CGPointMake(UIScreen.mainScreen.bounds.size.width - 44, 130);
+        gPanel.bubble.center = CGPointMake(UIScreen.mainScreen.bounds.size.width - 44, 130);
         gPanelWin.hidden = NO;
     });
 }
