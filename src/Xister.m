@@ -3,6 +3,8 @@
 #import <UIKit/UIKit.h>
 #import <QuartzCore/QuartzCore.h>
 #import <mach/mach.h>
+#import <mach/mach_vm.h>
+#import <mach/mach_time.h>
 #import <mach/vm_region.h>
 #import <mach/vm_map.h>
 #import <mach-o/dyld.h>
@@ -388,7 +390,7 @@ static float     gRemX, gRemY;
 
 static float xs_score(const XSEnt *e, Vec2 cur, float *ang){
     Vec3 pt = (gP.boneIdxNeck()) ? e->neck : e->head;
-    Vec3 d = v3sub(pt, gLocalEye);
+    Vec3 pt = gP.aimNeck ? e->neck : e->head;
     float yaw = atan2f(d.x, d.z) * 57.29578f;
     float pitch = atan2f(d.y, sqrtf(d.x*d.x + d.z*d.z)) * 57.29578f;
     float a = sqrtf(powf(wrapdeg(yaw - cur.x), 2) + powf(wrapdeg(pitch - cur.y), 2));
