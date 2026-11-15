@@ -480,15 +480,6 @@ static void xs_render_init(void){
         UIViewController *vc = [UIViewController new];
         vc.view = gOvRoot;
         gOvWin.rootViewController = vc;
-        UILabel *st = [UILabel new];
-        st.tag = 900;
-        st.font = [UIFont monospacedSystemFontOfSize:10 weight:UIFontWeightRegular];
-        st.textColor = [UIColor colorWithWhite:1 alpha:0.55];
-        st.translatesAutoresizingMaskIntoConstraints = NO;
-        [NSLayoutConstraint activateConstraints:@[
-            [st.topAnchor constraintEqualToAnchor:title.bottomAnchor constant:4],
-            [st.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
-        ]];
 
         gLBox = [CAShapeLayer layer]; gLBone = [CAShapeLayer layer]; gLLine = [CAShapeLayer layer];
         for (CAShapeLayer *l in @[gLBox, gLBone, gLLine]){
