@@ -27,7 +27,7 @@ jobs:
           cd insert_dylib
           SRC=$(find . -name '*.c' -not -path '*tests*')
           echo "fuentes: $SRC"
-          clang -O2 -framework Foundation -o /usr/local/bin/insert_dylib $SRC--weak
+          clang -O2 -framework Foundation -o /usr/local/bin/insert_dylib $SRC
           chmod +x /usr/local/bin/insert_dylib
           test -x /usr/local/bin/insert_dylib && echo OK
 
@@ -51,7 +51,7 @@ jobs:
           BIN=$(find w/Payload -maxdepth 2 -type f -perm -111 ! -name '*.dylib' | head -1)
           echo "binario: $BIN"
           cp build/Xister.dylib "$(dirname "$BIN")/Xister.dylib"
-          insert_dylib --strip-codesig --inplace @executable_path/Xister.dylib "$BIN"
+          insert_dylib --strip-codesig --weak --inplace @executable_path/Xister.dylib "$BIN"
           ldid -Sentitlements.plist "$BIN"
           ( cd w && zip -qry ../out/Xister-injected.ipa Payload )
           cp build/Xister.dylib out/Xister.dylib
