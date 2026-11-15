@@ -142,14 +142,16 @@ static size_t xs_parse_sig(const char *sig, uint8_t *bytes, uint8_t *mask, size_
 static uintptr_t xs_scan_range(uintptr_t start, size_t len, const uint8_t *b,
                                const uint8_t *m, size_t pl){
     if (!start || !pl || pl > len) return 0;
-    const uint8_t *end = (const uint8_t *)(start + len - pl);
-    for (const uint8_t *cur = (const uint8_t *)start; cur <= end; cur++){
-        const uint8_t *hit = memchr(cur, b[0], (size_t)(end - cur) + 1);
+    const uint8_t *p = (const uint8_t *)start;
+    const uint8_t *last = p + (len - pl);
+    while (p <= last){
+        size_t remain = (size_t)(last - p) + 1;
+        const uint8_t *hit = memchr(p, b[0], remain);
         if (!hit) return 0;
-        cur = hit;
         size_t i = 1;
-        for (; i < pl; i++) if (m[i] && cur[i] != b[i]) break;
-        if (i == pl) return (uintptr_t)cur;
+        for (; i < pl; i++) if (m[i] && hit[i] != b[i]) break;
+        if (i == pl) return (uintptr_t)hit;
+        p = hit + 1;
     }
     return 0;
 }
@@ -158,20 +160,22 @@ static uintptr_t xs_scan_image(const char *image, const char *sig){
     uint8_t b[256], m[256];
     size_t pl = xs_parse_sig(sig, b, m, sizeof(b));
     if (!pl) return 0;
+
     uint32_t n = _dyld_image_count();
     for (uint32_t i = 0; i < n; i++){
         const char *nm = _dyld_get_image_name(i);
         if (!nm || !strstr(nm, image)) continue;
+
         const struct mach_header_64 *h = (const struct mach_header_64 *)_dyld_get_image_header(i);
-        if (!h) continue;
-        intptr_t slide = _dyld_get_image_vmaddr_slide(i);
+        if (!h || h->magic != MH_MAGIC_64) continue;
+
         const struct segment_command_64 *seg = (const struct segment_command_64 *)(h + 1);
         for (uint32_t c = 0; c < h->ncmds; c++){
             if (seg->cmd == LC_SEGMENT_64 && !strcmp(seg->segname, "__TEXT")){
-                uintptr_t r = xs_scan_range((uintptr_t)(seg->vmaddr + slide),
-                                            (size_t)seg->vmsize, b, m, pl);
-                if (r) return r;
-                break;
+                size_t len = (size_t)seg->filesize;
+                if (!len || len > (200u << 20)) len = (size_t)seg->vmsize;
+                if (len > (200u << 20)) return 0;
+                return xs_scan_range((uintptr_t)h, len, b, m, pl);
             }
             seg = (const struct segment_command_64 *)((const uint8_t *)seg + seg->cmdsize);
         }
@@ -476,6 +480,16 @@ static void xs_render_init(void){
         UIViewController *vc = [UIViewController new];
         vc.view = gOvRoot;
         gOvWin.rootViewController = vc;
+        UILabel *st = [UILabel new];
+        st.tag = 900;
+        st.font = [UIFont monospacedSystemFontOfSize:10 weight:UIFontWeightRegular];
+        st.textColor = [UIColor colorWithWhite:1 alpha:0.55];
+        st.translatesAutoresizingMaskIntoConstraints = NO;
+        [self addSubview:st];
+        [NSLayoutConstraint activateConstraints:@[
+            [st.topAnchor constraintEqualToAnchor:title.bottomAnchor constant:4],
+            [st.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
+        ]];
 
         gLBox = [CAShapeLayer layer]; gLBone = [CAShapeLayer layer]; gLLine = [CAShapeLayer layer];
         for (CAShapeLayer *l in @[gLBox, gLBone, gLLine]){
@@ -730,7 +744,7 @@ static void xs_loop(void){
     return self;
 }
 @end
-
+static NSString *gStatusText = @"esperando";
 @interface XSPanel : UIView
 @property (nonatomic, strong) UIView *bubble;
 @end
@@ -756,7 +770,7 @@ static void xs_loop(void){
     _pageProf.hidden = s.selectedSegmentIndex != 2;
 }
 - (void)hide{ _win.hidden = YES; _bubble.hidden = NO; }
-- (void)show{ _bubble.hidden = YES; _win.hidden = NO; [self refresh]; }
+- (void)show{ _bubble.hidden = YES; _win.hidden = NO; [self refresh];((UILabel *)[self viewWithTag:900]).text = gStatusText; }
 
 - (instancetype)initWithWindow:(UIWindow *)w{
     if ((self = [super init])){
@@ -994,6 +1008,9 @@ static void xs_main(void){
             xs_bypass_install();
             xs_render_init();
             int ok = xs_resolve();
+            dispatch_async(dispatch_get_main_queue(), ^{
+        gStatusText = [NSString stringWithFormat:@"firmas %d/%d", ok, XS_SYM_COUNT];
+    });
             if (ok > 0){
                 gRun = true;
                 [NSThread detachNewThreadWithBlock:^{ xs_loop(); }];
