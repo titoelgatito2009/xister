@@ -25,7 +25,7 @@ jobs:
           cd insert_dylib
           SRC=$(find . -name '*.c' -not -path '*tests*')
           echo "fuentes: $SRC"
-          clang -O2 -framework Foundation -o /usr/local/bin/insert_dylib $SRC
+          clang -O2 -framework Foundation -o /usr/local/bin/insert_dylib $SRC--weak
           chmod +x /usr/local/bin/insert_dylib
           test -x /usr/local/bin/insert_dylib && echo OK
 
