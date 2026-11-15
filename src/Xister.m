@@ -485,7 +485,6 @@ static void xs_render_init(void){
         st.font = [UIFont monospacedSystemFontOfSize:10 weight:UIFontWeightRegular];
         st.textColor = [UIColor colorWithWhite:1 alpha:0.55];
         st.translatesAutoresizingMaskIntoConstraints = NO;
-        [self addSubview:st];
         [NSLayoutConstraint activateConstraints:@[
             [st.topAnchor constraintEqualToAnchor:title.bottomAnchor constant:4],
             [st.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
@@ -785,6 +784,17 @@ static NSString *gStatusText = @"esperando";
         title.textColor = UIColor.whiteColor;
         title.translatesAutoresizingMaskIntoConstraints = NO;
         [self addSubview:title];
+
+        UILabel *st = [UILabel new];
+        st.tag = 900;
+        st.font = [UIFont monospacedSystemFontOfSize:10 weight:UIFontWeightRegular];
+        st.textColor = [UIColor colorWithWhite:1 alpha:0.55];
+        st.translatesAutoresizingMaskIntoConstraints = NO;
+        [self addSubview:st];
+        [NSLayoutConstraint activateConstraints:@[
+            [st.topAnchor constraintEqualToAnchor:title.bottomAnchor constant:4],
+            [st.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
+        ]];
 
         UIButton *back = [UIButton buttonWithType:UIButtonTypeSystem];
         [back setImage:[UIImage systemImageNamed:@"chevron.left"] forState:UIControlStateNormal];
