@@ -20,6 +20,8 @@ jobs:
 
       - name: Instalar Herramientas
         run: |
+          export HOMEBREW_NO_AUTO_UPDATE=1
+          export HOMEBREW_NO_INSTALL_CLEANUP=1
           brew install ldid
           git clone --depth 1 https://github.com/Tyilo/insert_dylib
           cd insert_dylib
