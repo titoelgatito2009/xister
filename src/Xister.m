@@ -1006,7 +1006,7 @@ static void xs_main(void){
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)),
                        dispatch_get_main_queue(), ^{
             gP = gTab[P_CONS];
-            xs_bypass_install();
+           // xs_bypass_install();
             xs_render_init();
             int ok = xs_resolve();
             dispatch_async(dispatch_get_main_queue(), ^{
