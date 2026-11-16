@@ -996,27 +996,27 @@ static void xs_ui_present(void){
 
 #pragma mark - Arranque
 
+static void xs_boot_ui(void){
+    xs_render_init();
+    xs_ui_present();
+}
+
 __attribute__((constructor))
 static void xs_main(void){
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
-        for (int i = 0; i < 200; i++){
+        for (int i = 0; i < 240; i++){
             if (dlopen("UnityFramework", RTLD_NOW | RTLD_NOLOAD)) break;
             usleep(50000);
         }
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)),
-                       dispatch_get_main_queue(), ^{
-            gP = gTab[P_CONS];
-           // xs_bypass_install();
-            xs_render_init();
-            int ok = xs_resolve();
-            dispatch_async(dispatch_get_main_queue(), ^{
-        gStatusText = [NSString stringWithFormat:@"firmas %d/%d", ok, XS_SYM_COUNT];
-    });
-            if (ok > 0){
-                gRun = true;
-                [NSThread detachNewThreadWithBlock:^{ xs_loop(); }];
-            }
-            xs_ui_present();
-        });
+        sleep(3);
+        gP = gTab[P_CONS];
+        // xs_bypass_install();
+        xs_resolve();
+        xs_calibrate();
+        if (gSym[XS_SYM_CAMERA].found && gSym[XS_SYM_LIST].found){
+            gRun = true;
+            [NSThread detachNewThreadWithBlock:^{ xs_loop(); }];
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{ xs_boot_ui(); });
     });
 }
