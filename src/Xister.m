@@ -729,6 +729,8 @@ static void xs_loop(void){
             [l.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
             [_sw.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-18],
             [_sw.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
+            [_sw.widthAnchor constraintEqualToConstant:51],
+            [_sw.heightAnchor constraintEqualToConstant:31],
         ]];
     }
     return self;
@@ -778,6 +780,7 @@ static NSString *gStatusText = @"esperando";
 
         UILabel *st = [UILabel new];
         st.tag = 900;
+        st.text = gStatusText;
         st.font = [UIFont monospacedSystemFontOfSize:10 weight:UIFontWeightRegular];
         st.textColor = [UIColor colorWithWhite:1 alpha:0.55];
         st.translatesAutoresizingMaskIntoConstraints = NO;
