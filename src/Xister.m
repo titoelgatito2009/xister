@@ -887,8 +887,8 @@ static NSString *gStatusText = @"esperando";
         }
         _pageVis.hidden = YES; _pageProf.hidden = YES;
 
-        _bubble = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
-        _bubble.frame = CGRectMake(0, 0, 52, 52);
+       _bubble = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 52, 52)];
+        _bubble.backgroundColor = [UIColor colorWithWhite:0.10 alpha:0.92];
         _bubble.layer.cornerRadius = 26;
         _bubble.clipsToBounds = YES;
         _bubble.layer.borderWidth = 1;
