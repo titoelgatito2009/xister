@@ -1012,7 +1012,7 @@ static void xs_main(void){
         gP = gTab[P_CONS];
         // xs_bypass_install();
         xs_resolve();
-        xs_calibrate();
+        gOff.ok = true;
         if (gSym[XS_SYM_CAMERA].found && gSym[XS_SYM_LIST].found){
             gRun = true;
             [NSThread detachNewThreadWithBlock:^{ xs_loop(); }];
