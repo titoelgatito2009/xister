@@ -997,8 +997,8 @@ static void xs_ui_present(void){
 #pragma mark - Arranque
 
 static void xs_boot_ui(void){
-   // xs_render_init();
-   // xs_ui_present();
+    xs_render_init();
+    xs_ui_present();
 }
 
 __attribute__((constructor))
