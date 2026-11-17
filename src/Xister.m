@@ -15,6 +15,7 @@
 #import <dlfcn.h>
 #import <sys/sysctl.h>
 #import "fishhook.h"
+static NSString *gStatusText = @"esperando";
 
 #pragma mark - IOHID (API privada, declarada a mano)
 
@@ -739,7 +740,6 @@ static void xs_loop(void){
     return self;
 }
 @end
-static NSString *gStatusText = @"esperando";
 @interface XSPanel : UIView
 @property (nonatomic, strong) UIView *bubble;
 @end
