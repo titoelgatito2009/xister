@@ -225,6 +225,9 @@ static int xs_resolve(void){
         s->found = true;
         ok++;
     }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        gStatusText = [NSString stringWithFormat:@"firmas %d/%d", ok, XS_SYM_COUNT];
+    });
     return ok;
 }
 
@@ -780,6 +783,9 @@ static NSString *gStatusText = @"esperando";
 
         UILabel *st = [UILabel new];
         st.tag = 900;
+        [NSTimer scheduledTimerWithTimeInterval:0.5 repeats:YES block:^(NSTimer *t){
+            st.text = gStatusText;
+        }];
         st.text = gStatusText;
         st.font = [UIFont monospacedSystemFontOfSize:10 weight:UIFontWeightRegular];
         st.textColor = [UIColor colorWithWhite:1 alpha:0.55];
@@ -1013,7 +1019,7 @@ static void xs_main(void){
         }
         sleep(3);
         gP = gTab[P_CONS];
-        // xs_bypass_install();
+        xs_bypass_install();
         xs_resolve();
         if (gSym[XS_SYM_CAMERA].found && gSym[XS_SYM_LIST].found){
             gRun = true;
